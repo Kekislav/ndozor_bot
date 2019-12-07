@@ -1,0 +1,55 @@
+import telebot
+
+bot = telebot.TeleBot('insert bot token here')
+
+level_of_requestor = 0
+level_of_requesting = 0
+number_of_requestor = 0
+bd_level = { 
+    int(person number) : int(level)
+}
+bd_infooutput = {
+    int(person number) : str(real info)
+}
+bd_falseoutput = {
+    int(person number) : str(false info)
+}
+
+@bot.message_handler(commands=['start'])
+def start_message(message):
+    bot.send_message(message.chat.id, 'Иной, если ты решил кого-то просканировать, введи свой личный номер:')
+    bot.register_next_step_handler(message, start)
+
+def start(message):
+    global level_of_requestor
+    global number_of_requestor
+    try: 
+        level_of_requestor = bd_level[int(message.text)]
+        number_of_requestor = int(message.text)
+    except:
+        bot.send_message(message.chat.id, 'Неверный номер. Введи свой личный номер.')
+        bot.register_next_step_handler(message, start)
+        return
+    bot.send_message(message.chat.id, 'Твой уровень {}. Введи номер того, кого хочешь просканировать'.format(level_of_requestor))
+
+@bot.message_handler(content_types=['text'])
+def compare(message):
+    global level_of_requesting
+    try:
+        level_of_requesting = bd_level[int(message.text)]
+    except:
+        bot.send_message(message.chat.id, 'Неверный номер. Введи номер того, кого хочешь просканировать.')
+        bot.register_next_step_handler(message, compare)
+        return
+    if number_of_requestor == int(message.text):
+        bot.send_message(message.chat.id, 'Нельзя сканровать себя. Если хочешь просканировать, введи номер другого Иного.' + 
+        ' Если хочешь начать сначала, введи /start')
+        return
+    if level_of_requestor <= level_of_requesting:
+        bot.send_message(message.chat.id, 'Информация: {} '.format(bd_infooutput[int(message.text)]))
+    elif level_of_requestor > level_of_requesting:
+        bot.send_message(message.chat.id, 'Защита слишком сильна. Информация: {} '.format(bd_falseoutput[int(message.text)]))
+    bot.send_message(message.chat.id, 'Работа окончена. Если хочешь просканировать ещё раз, введи номер другого Иного.' + 
+        ' Если хочешь начать сначала, введи /start')
+
+bot.polling()
