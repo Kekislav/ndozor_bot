@@ -1,54 +1,75 @@
 import telebot
 
-bot = telebot.TeleBot('insert bot token here')
+bot = telebot.TeleBot('bot_token')
 
 level_of_requestor = 0
 level_of_requesting = 0
 number_of_requestor = 0
-bd_level = { 
-    int(person number) : int(level)
-}
-bd_infooutput = {
-    int(person number) : str(real info)
-}
-bd_falseoutput = {
-    int(person number) : str(false info)
-}
+
+user_id = 0
+notify_id = 0
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
-    bot.send_message(message.chat.id, 'Иной, если ты решил кого-то просканировать, введи свой личный номер:')
-    bot.register_next_step_handler(message, start)
-
-def start(message):
-    global level_of_requestor
-    global number_of_requestor
-    try: 
-        level_of_requestor = bd_level[int(message.text)]
-        number_of_requestor = int(message.text)
-    except:
-        bot.send_message(message.chat.id, 'Неверный номер. Введи свой личный номер.')
-        bot.register_next_step_handler(message, start)
-        return
-    bot.send_message(message.chat.id, 'Твой уровень {}. Введи номер того, кого хочешь просканировать'.format(level_of_requestor))
+    bot.send_message(message.chat.id, 'Иной, если ты решил кого-то просканировать, введи его номер:')
 
 @bot.message_handler(content_types=['text'])
+
 def compare(message):
-    global level_of_requesting
+    global level_of_requestor, number_of_requestor, level_of_requesting, notify_id, db_name, db_level, db_chat_id, db_id_level, db_false_info, db_info
+    def DB(n, i):
+        db_name = {
+            123 : 'name', 
+            321 : 'name',
+            333 : 'name',
+            555 : 'name' 
+        }
+        db_level = {
+            123 : 1, 
+            321 : 3,
+            333 : 1,
+            555 : 5 
+        }
+        db_chat_id = {
+            'name' : chat_id,
+            'name' : chat_id
+        }
+        db_id_level = {
+            chat_id : 1,
+            chat_id : 2
+        }
+        db_false_info = {
+            123 : 'false1', 
+            321 : 'false2', 
+            333 : 'false3', 
+            555 : 'false4'
+        }
+        db_info = {
+            123 : 'True1', 
+            321 : 'True2', 
+            333 : 'True3', 
+            555 : 'True4'
+        }
+        return eval(i)[n]  
+    try: 
+        DB(message.chat.id, 'db_id_level')
+    except:
+        bot.send_message(message.chat.id, 'Ты не в игре. Свяжись с мастерами. /start')
+        bot.register_next_step_handler(message, start_message)
+        return
     try:
-        level_of_requesting = bd_level[int(message.text)]
+        DB(int(message.text), 'db_level')
     except:
         bot.send_message(message.chat.id, 'Неверный номер. Введи номер того, кого хочешь просканировать.')
         bot.register_next_step_handler(message, compare)
         return
-    if number_of_requestor == int(message.text):
-        bot.send_message(message.chat.id, 'Нельзя сканровать себя. Если хочешь просканировать, введи номер другого Иного.' + 
-        ' Если хочешь начать сначала, введи /start')
-        return
+    notify_id = DB(DB(int(message.text), 'db_name'), 'db_chat_id')
     if level_of_requestor <= level_of_requesting:
-        bot.send_message(message.chat.id, 'Информация: {} '.format(bd_infooutput[int(message.text)]))
+        bot.send_message(message.chat.id, 'Информация: {} '.format(DB(int(message.text), 'db_false_info')))
+        bot.send_message(notify_id, 'Вас просканировали')
     elif level_of_requestor > level_of_requesting:
-        bot.send_message(message.chat.id, 'Защита слишком сильна. Информация: {} '.format(bd_falseoutput[int(message.text)]))
+        bot.send_message(message.chat.id, 'Защита слишком сильна. Информация: {} '.format(DB(int(message.text), 'db_info')))
+        bot.send_message(notify_id, 'Вас пыталсь просканировать')
     bot.send_message(message.chat.id, 'Работа окончена. Если хочешь просканировать ещё раз, введи номер другого Иного.' + 
         ' Если хочешь начать сначала, введи /start')
 
